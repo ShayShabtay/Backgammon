@@ -1,0 +1,45 @@
+﻿<Page x:Class="Client.Views.ChatView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Client.Views"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="ChatView"
+      Background="White">
+
+    <Grid Background ="White">
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="Black" BorderThickness="1">
+            <Grid Height="450" Width="800" Background="Aqua">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="0*"/>
+                </Grid.RowDefinitions>
+
+                <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="231" Margin="133,87,0,0" VerticalAlignment="Top" Width="441">
+                    <TextBox  Name="textBlock" SelectionBrush="Transparent" Cursor="Arrow" IsReadOnly="True" Text="{Binding MessagesBlock}" VerticalScrollBarVisibility="Auto"/>
+                </Border>
+                <Button Content="Send" Name="sendBtn" Command="{Binding SendMessageCommand}" HorizontalAlignment="Left" Margin="596,361,0,0" VerticalAlignment="Top" Width="74" RenderTransformOrigin="0.5,0.5" Height="30">
+                    <Button.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform Angle="0.088"/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Button.RenderTransform>
+                </Button>
+                <TextBox Name="messageTxtBox" Text="{Binding MessageToSend}" HorizontalAlignment="Left" Height="34" Margin="119,359,0,0" TextWrapping="Wrap"  VerticalAlignment="Top" Width="468"/>
+                <Button Name="closeBtn" Command="{Binding CloseChatCommand}" HorizontalAlignment="Left" Height="33" Margin="630,26,0,0" VerticalAlignment="Top" Width="34">
+                    <Button.Background>
+                        <ImageBrush ImageSource="/Client;component/Assets/Close.png"/>
+                    </Button.Background>
+                </Button>
+                <TextBlock HorizontalAlignment="Left" Margin="252,30,0,0" TextWrapping="Wrap" Text="{Binding UserToView}" VerticalAlignment="Top" Width="121"/>
+                <TextBlock HorizontalAlignment="Left" Height="20" Margin="166,29,0,0" TextWrapping="Wrap" Text="You Chat with:" VerticalAlignment="Top" Width="95"/>
+
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

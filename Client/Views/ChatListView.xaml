@@ -1,0 +1,50 @@
+﻿<Page x:Class="Client.Views.ChatListView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Client.Views"
+      xmlns:UserModel="clr-namespace:Client.Models"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="ChatListView">
+
+    <Page.Resources>
+        <DataTemplate DataType="{x:Type UserModel:UserForContact}">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding UserName}" Width="100"></TextBlock>
+                    <Ellipse  HorizontalAlignment="Left" Height="17" Stroke="Black" VerticalAlignment="Top" Width="21">
+                        <Ellipse.Style>
+                            <Style TargetType="{x:Type Ellipse}">
+                                <Setter Property="Fill" Value="Red" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding State}" Value="Online">
+                                        <Setter Property="Fill" Value="Green">
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding State}" Value="Busy">
+                                        <Setter Property="Fill" Value="Yellow">
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                </StackPanel>
+
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Background ="White">
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="Black" BorderThickness="1">
+            <Grid Height="450" Width="800" Background="Aqua">
+        <ListBox x:Name="contactsListbox" ItemsSource="{Binding Contacts}" SelectedItem="{Binding ChosenUser}" HorizontalAlignment="Left" Height="384" VerticalAlignment="Top" Width="258" Margin="237,0,0,0"/>
+        <Button Content="Log Out" HorizontalAlignment="Left" Margin="619,337,0,0" VerticalAlignment="Top" Width="75" Name="logOutBtn" Command="{Binding LogOutCommand}"/>
+        <Button Content="Chat" Command="{Binding OpenChatCommand}" HorizontalAlignment="Left" Height="22" Margin="619,297,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Content="Game" Command="{Binding OpenGameCommand}" HorizontalAlignment="Left" Height="27" Margin="619,250,0,0" VerticalAlignment="Top" Width="75"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>
