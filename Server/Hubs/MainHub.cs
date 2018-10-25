@@ -20,12 +20,12 @@ namespace Server.Hubs
         GameManager _gameManager = GameManager.Instance;
 
         #region UserHub   
-        
+
         public bool Register(User newUser)
         {
             bool registerSucceed = _userManager.RegisterToDb(newUser);
 
-            if(registerSucceed)
+            if (registerSucceed)
             {
                 NotifyUserStateChage();
                 _userManager.AddConnectionID(Context.ConnectionId, newUser.UserName);
@@ -39,10 +39,19 @@ namespace Server.Hubs
         {
             bool loginSucceed = _userManager.LoginFrmDb(userToLogin);
 
-            if(loginSucceed)
+            if (loginSucceed)
             {
                 NotifyUserStateChage();
+                try
+                {
                 _userManager.AddConnectionID(Context.ConnectionId, userToLogin.UserName);
+
+                }
+                catch (Exception)
+                {
+
+                    return false;
+                }
                 return true;
             }
             return false;
@@ -78,9 +87,9 @@ namespace Server.Hubs
             string currentUser = _userManager.UserConnection.FirstOrDefault(x => x.Value == ConnectionId).Key;
             _userManager.UpdateContactList(currentUser, UserState.Offline);
             _userManager.RemoveConnectionId(currentUser);
-            string pairedUser =  _userManager.FindPair(currentUser);
+            string pairedUser = _userManager.FindPair(currentUser);
 
-            if(pairedUser != null)
+            if (pairedUser != null)
             {
                 NotifyUserLeaveChat(pairedUser, currentUser);
             }
@@ -101,9 +110,8 @@ namespace Server.Hubs
         public void HandleInvitationResult(bool userResponse, string sender, string reciver)
         {
             string senderConnectionId = _userManager.GetConnectionID(sender);
-            if(userResponse)
+            if (userResponse)
             {
-                _gameManager.CurrentTurn = sender;
                 _userManager.addNewPair(sender, reciver);
             }
             Clients.Client(senderConnectionId).getInvitationResult(userResponse);
@@ -112,7 +120,7 @@ namespace Server.Hubs
         public void SendMessage(string message, string receiver, string sender)
         {
             string reciverConnectionId = _userManager.GetConnectionID(receiver);
-            Clients.Client(reciverConnectionId).sendMessage(message, sender);
+            Clients.Client(reciverConnectionId).getMessage(message, sender);
         }
 
         public void NotifyUserLeaveChat(string reciver, string sender)
@@ -126,9 +134,27 @@ namespace Server.Hubs
 
         #region GameHub
 
+        public string GetKey(string sender, string reciver)
+        {
+           return _gameManager.GetKey(sender, reciver);
+        }
+
+        public void InitBoardGame(string sender, string reciver)
+        {
+            _gameManager.InitBoard(sender, reciver);
+        }
+
+        public IBoardState GetBoardState(string key)
+        {
+            return _gameManager.GetBoardState(key);
+        }
+
         public Cube RollCube(string otherPlayer)
         {
-            _gameManager.RollCubes();
+            Cube rollResult = _gameManager.RollCubes();
+            string otherPlayerConnectionId = _userManager.GetConnectionID(otherPlayer);
+            Clients.Client(otherPlayerConnectionId).rollCubesResult(rollResult);
+            return rollResult;
         }
         #endregion
     }

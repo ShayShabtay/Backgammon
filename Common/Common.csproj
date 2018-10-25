@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\UserState.cs" />
+    <Compile Include="Interfaces\IBoardState.cs" />
     <Compile Include="Interfaces\IUser.cs" />
     <Compile Include="Models\Cube.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

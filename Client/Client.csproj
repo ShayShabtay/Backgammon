@@ -64,6 +64,7 @@
     <Compile Include="BL\ClientChatManager.cs" />
     <Compile Include="BL\ClientGameManager.cs" />
     <Compile Include="BL\InitializeProxy.cs" />
+    <Compile Include="Models\BoardState.cs" />
     <Compile Include="Models\UserForContact.cs" />
     <Compile Include="Utils\ChatMessageFormatter.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
@@ -155,6 +156,14 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Board.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\1.png" />
+    <Resource Include="Assets\2.png" />
+    <Resource Include="Assets\3.png" />
+    <Resource Include="Assets\4.png" />
+    <Resource Include="Assets\5.png" />
+    <Resource Include="Assets\6.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

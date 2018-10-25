@@ -13,37 +13,36 @@ using System.Windows;
 namespace Client.BL
 {
     //Delegates
-    public delegate void NotifiystateEventHandler(Dictionary<string, UserState> dic);
+    public delegate void NotifystateEventHandler(Dictionary<string, UserState> dic);
 
     class ClientUserManager
     {
         //Events declaration
-        private event NotifiystateEventHandler NotifyEvent;
+        private event NotifystateEventHandler NotifyEvent;
 
         //Proxy connection
-        private InitializeProxy _proxy = InitializeProxy.Instance;
+        private InitializeProxy _server = InitializeProxy.Instance;
 
-        //Fields
+        //Properties
         public static string CurrentUserName { get; set; }
         public static string UserToChat { get; set; }
 
         //Ctor
         public ClientUserManager()
         {
-            //Server invoke
-            _proxy.Proxy.On("NotifyUserStateChage", (Dictionary<string, UserState> updateContactList) =>
+            //Server invoke methods
+            _server.Proxy.On("NotifyUserStateChage", (Dictionary<string, UserState> updateContactList) =>
             {
                 if(CurrentUserName != null)
                 {
                 updateContactList.Remove(CurrentUserName);
                 }
                 NotifyEvent?.Invoke(updateContactList);
-            });
-            _proxy.Connection.Start().Wait();
-            
+            }); //Update the contact list.
+            _server.Connection.Start().Wait();
         }
 
-        //Client invoke functions
+        //Client invoke methods
         internal bool InvokeRegistration(User user)
         {
             try
@@ -51,10 +50,8 @@ namespace Client.BL
                 CurrentUserName = user.UserName;
                 Task<bool> registerTask = Task.Run(async () =>
                 {
-                    return await _proxy.Proxy.Invoke<bool>("Register", user);
+                    return await _server.Proxy.Invoke<bool>("Register", user);
                 });
-                registerTask.ConfigureAwait(false);
-                registerTask.Wait();
                 return registerTask.Result;
             }
             catch (Exception)
@@ -62,7 +59,7 @@ namespace Client.BL
                 MessageBox.Show("Server error");
                 return false;
             }
-        }
+        } 
 
         internal bool InvokeLogin(User user)
         {
@@ -70,7 +67,7 @@ namespace Client.BL
             {
                 Task<bool> loginTask = Task.Run(async () =>
                 {
-                    return await _proxy.Proxy.Invoke<bool>("Login", user);
+                    return await _server.Proxy.Invoke<bool>("Login", user);
                 });
                 loginTask.ConfigureAwait(false);
                 loginTask.Wait();
@@ -88,7 +85,7 @@ namespace Client.BL
         {
             Task<Dictionary<string, UserState>> Contacts = Task.Run(async () =>
             {
-                return await _proxy.Proxy.Invoke<Dictionary<string, UserState>>("GetContactList");
+                return await _server.Proxy.Invoke<Dictionary<string, UserState>>("GetContactList");
             });
 
             Contacts.ConfigureAwait(false);
@@ -96,13 +93,13 @@ namespace Client.BL
 
             Contacts.Result.Remove(CurrentUserName);
             return Contacts.Result;
-        }
+        }  
 
         internal void ChangeUserStatus(UserState newState)
         {
             Task ChangeStateTask = Task.Run(async () =>
             {
-                await _proxy.Proxy.Invoke("ChangeUserStatus", CurrentUserName, newState);
+                await _server.Proxy.Invoke("ChangeUserStatus", CurrentUserName, newState);
             });
             ChangeStateTask.ConfigureAwait(false);
         }
@@ -113,7 +110,7 @@ namespace Client.BL
             {
                 Task logOutTask = Task.Run(async () =>
                 {
-                    await _proxy.Proxy.Invoke("LogOut", CurrentUserName);
+                    await _server.Proxy.Invoke("LogOut", CurrentUserName);
                 });
                 logOutTask.ConfigureAwait(false);
                 logOutTask.Wait();
@@ -129,7 +126,7 @@ namespace Client.BL
         }
 
         //Events
-        public void RgisterNotifyEvent(NotifiystateEventHandler onNotifyEvent)
+        public void RgisterNotifyAnyUserChangeStateEvent(NotifystateEventHandler onNotifyEvent)
         {
             NotifyEvent += onNotifyEvent;
         }

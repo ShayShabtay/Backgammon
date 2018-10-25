@@ -9,109 +9,126 @@ using System.Windows;
 namespace Client.BL
 {
     //Delegates
-    public delegate void SendMessageEventHandler(string message, string sender);
     public delegate void InvationResultEventHandler(bool userResponse);
-    public delegate void SendRequestEventHandler(string sender, bool res, bool isGame);
+    public delegate void ReciverInivitationResultEventHandler(bool reciverAnswer, bool isGame);
+    public delegate void GetMessageEventHandler(string message, string sender);
     public delegate void NotifyUserLeaveChatRoomEventHandler();
 
     class ClientChatManager
     {
         //Events declaration
-        private event SendMessageEventHandler SendMessageEvent;
         private event InvationResultEventHandler InvatationResultEvent;
-        private event SendRequestEventHandler SendRequestEvent;
+        private event ReciverInivitationResultEventHandler ReciverInivtationResultEvent;
+        private event GetMessageEventHandler GetMessageEvent;
         private event NotifyUserLeaveChatRoomEventHandler UserLeaveChatEvent;
 
         //Proxy connection
-        private InitializeProxy _proxy = InitializeProxy.Instance;
+        private InitializeProxy _server = InitializeProxy.Instance;
 
         //Ctor
         public ClientChatManager()
         {
-            //Server inovke
-            _proxy.Proxy.On("sendMessage", (string message, string sender) =>
-            {
-                SendMessageEvent?.Invoke(message, sender);
-            });
-            _proxy.Proxy.On("InterationRequest", (string sender, bool isGame) =>
+            //Reciver get request and send both of them the result, invoke server to init game board.
+            _server.Proxy.On("InterationRequest", (string sender, bool isGame) =>
             {
                 MessageBoxResult res = MessageBox.Show($"{sender} invite you to chat", "Chat request", MessageBoxButton.YesNo);
-                bool boolRes = res == MessageBoxResult.Yes ? true : false;
+                bool reciverAnswer = res == MessageBoxResult.Yes ? true : false;
                 ClientUserManager.UserToChat = sender;
 
-                SendRequestEvent?.Invoke(sender, boolRes, isGame); // <---- remove sender
+                if (reciverAnswer && isGame)
+                {
+                    Task task = Task.Run(() =>
+                    {
+                        _server.Proxy.Invoke<string>("InitBoardGame", sender, ClientUserManager.CurrentUserName);
+                    });
+                } //Invoke the server to init the game board. 
+
+                ReciverInivtationResultEvent?.Invoke(reciverAnswer, isGame); //Send reciver invitation result.
 
                 Task ChatResponse = Task.Run(async () =>
                 {
-                    await _proxy.Proxy.Invoke("HandleInvitationResult", boolRes, sender, ClientUserManager.CurrentUserName);
-                });
+                    await _server.Proxy.Invoke("HandleInvitationResult", reciverAnswer, sender, ClientUserManager.CurrentUserName);
+                }); //Send sender invitation result.
                 ChatResponse.ConfigureAwait(false);
 
             });
-            _proxy.Proxy.On("getInvitationResult", (bool invationResult) =>
+
+            //Sender Get the invitation result.
+            _server.Proxy.On("getInvitationResult", (bool invationResult) =>
             {
                 InvatationResultEvent?.Invoke(invationResult);
             });
-            _proxy.Proxy.On("notifyUserLeaveChat", () =>
+
+            //Reciver get message.
+            _server.Proxy.On("getMessage", (string message, string sender) =>
+            {
+                GetMessageEvent?.Invoke(message, sender);
+            });
+
+            //Reciver get notified thet sender leave the chat room.
+            _server.Proxy.On("notifyUserLeaveChat", () =>
             {
                 Task UserLeaveTask = Task.Run(() =>
                 {
-                  UserLeaveChatEvent?.Invoke();
+                    UserLeaveChatEvent?.Invoke();
                 });
             });
-            _proxy.Connection.Start().Wait();
+
+            _server.Connection.Start().Wait();
         }
 
-        //Client invoke functions
+        //Sender methods
         internal void SendRequest(bool isGame)
         {
             Task ChatRequest = Task.Run(async () =>
             {
-                await _proxy.Proxy.Invoke("SendRequest", ClientUserManager.CurrentUserName, ClientUserManager.UserToChat, isGame);
+                await _server.Proxy.Invoke("SendRequest", ClientUserManager.CurrentUserName, ClientUserManager.UserToChat, isGame);
             });
             ChatRequest.ConfigureAwait(false);
             ChatRequest.Wait();
-        }
-
-        internal void NotifyUserLeaveChat()
-        {
-            Task CloseChatTask = Task.Run(async () =>
-            {
-                await _proxy.Proxy.Invoke("NotifyUserLeaveChat", ClientUserManager.UserToChat, ClientUserManager.CurrentUserName);
-            });
-            CloseChatTask.ConfigureAwait(false);
-            //CloseChatTask.Wait();
-        }
+        } //Sender chat or game request.
 
         internal void InvokeSendMessage(string messageToSend)
         {
             Task sendMessageTask = Task.Run(async () =>
             {
-                await _proxy.Proxy.Invoke("SendMessage", messageToSend, ClientUserManager.UserToChat, ClientUserManager.CurrentUserName);
+                await _server.Proxy.Invoke("SendMessage", messageToSend, ClientUserManager.UserToChat, ClientUserManager.CurrentUserName);
             });
             sendMessageTask.ConfigureAwait(false);
             sendMessageTask.Wait();
-        }
+        }//Sender send message.
 
-        //Events
-        public void RegistersendMessageEvent(SendMessageEventHandler onSendEvent)
+        internal void NotifyUserLeaveChat()
         {
-            SendMessageEvent += onSendEvent;
-        }
+            Task CloseChatTask = Task.Run(async () =>
+            {
+                await _server.Proxy.Invoke("NotifyUserLeaveChat", ClientUserManager.UserToChat, ClientUserManager.CurrentUserName);
+            });
+            CloseChatTask.ConfigureAwait(false);
+            //CloseChatTask.Wait();
+        } //Sender leave chat room.
 
-        public void RegistersendRequestEvent(SendRequestEventHandler onRequestEvent)
-        {
-            SendRequestEvent += onRequestEvent;
-        }
 
+        //Sender events
         public void RegisterResultInvationEvent(InvationResultEventHandler onInvationResult)
         {
             InvatationResultEvent += onInvationResult;
-        }
+        } 
+
+        //Reciver events
+        public void RegisterReciverInvitationResultEvent(ReciverInivitationResultEventHandler onRequestEvent)
+        {
+            ReciverInivtationResultEvent += onRequestEvent;
+        } 
+
+        public void RegisterGetMessageEvent(GetMessageEventHandler onSendEvent)
+        {
+            GetMessageEvent += onSendEvent;
+        } 
 
         public void RegisterOtherUserLeaveChatEvent(NotifyUserLeaveChatRoomEventHandler onOtherUserLeave)
         {
             UserLeaveChatEvent += onOtherUserLeave;
-        }
+        } 
     }
 }

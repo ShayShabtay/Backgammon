@@ -1,5 +1,7 @@
 ﻿using Client.BL;
+using Client.Models;
 using Client.Utils;
+using Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,16 +19,10 @@ namespace Client.ViewModels
     {
         //Managers
         ClientGameManager _gameManager;
+
         //Properties
-        private int[,] _blackCheckers;
-        private int[,] _whiteCheckers;
-
-
-
         public ICommand RoleCubeCommand { get; set; }
-
         private ObservableCollection<Ellipse>[] _cells;
-
         public ObservableCollection<Ellipse>[] Cells
         {
             get
@@ -39,66 +35,59 @@ namespace Client.ViewModels
                 OnPropertyChanged();
             }
         }
-
+        private string _imgCube1;
+        public string ImgCube1
+        {
+            get
+            {
+                return _imgCube1;
+            }
+            set
+            {
+                _imgCube1 = value;
+                OnPropertyChanged();
+            }
+        }
+        private string _imgCube2;
+        public string ImgCube2
+        {
+            get
+            {
+                return _imgCube2;
+            }
+            set
+            {
+                _imgCube2 = value;
+                OnPropertyChanged();
+            }
+        }
+        BoardState boardState;
+        public int RotatedBoard { get; set; }
 
         //Ctor
         public GameViewModel()
         {
-            _gameManager = new ClientGameManager();
-            RoleCubeCommand = new RelayCommand(RollCubes);
-            Cells = new ObservableCollection<Ellipse>[24];
-            for (int i = 0; i < 24; i++)
-            {
-                Cells[i] = new ObservableCollection<Ellipse>();
-            }
-            InitializeGame();
+            InitializeComponents();
+            InitializeBoard();
+            // _gameManager.RegisterCubesResultEvent(RollCubesResult);
         }
 
+        //Methods
         private void RollCubes()
         {
-            _gameManager.RollCubes();
+            Cube rollResult = _gameManager.RollCubes();
+            PaintCubeResult(rollResult);
         }
 
-        private void InitializeGame()
-        {
-            _whiteCheckers = new int[,]
-           {
-                {0,2},
-                {11,5},
-                {16,3},
-                {18,5},
-           };
-            _blackCheckers = new int[,]
-            {
-                {5,5},
-                {7,3},
-                {12,5},
-                {23,2},
-            };
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < _whiteCheckers[i, 1]; j++)
-                {
-                    _cells[_whiteCheckers[i, 0]].Add(Checker(false));
-                }
-            }
 
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < _blackCheckers[i, 1]; j++)
-                {
-                    _cells[_blackCheckers[i, 0]].Add(Checker(true));
-                }
-            }
-
-        }
-
+        //Paint board methods
         private Ellipse Checker(bool isBlack)
         {
             Ellipse Ellipse = new Ellipse
             {
                 Height = 20,
-                Width = 20
+                Width = 20,
+                Stroke = new SolidColorBrush(Colors.Black)
             };
 
             if (isBlack)
@@ -108,7 +97,69 @@ namespace Client.ViewModels
 
             return Ellipse;
         }
-    }
 
+        private void PaintCubeResult(Cube rollResult)
+        {
+            ImgCube1 = $"/Assets/{rollResult.Cube1}.png";
+            ImgCube1 = $"/Assets/{rollResult.Cube2}.png";
+        }
+
+
+        //Ctor methods
+        private void InitializeComponents()
+        {
+            _gameManager = new ClientGameManager();
+
+            RoleCubeCommand = new RelayCommand(RollCubes);
+            Cells = new ObservableCollection<Ellipse>[24];
+
+
+
+            boardState = _gameManager.GetBoardState();
+            if (boardState.CurrentPlayer != ClientUserManager.CurrentUserName)
+            {
+                RotatedBoard = 180;
+            }
+
+            for (int i = 0; i < 24; i++)
+            {
+                Cells[i] = new ObservableCollection<Ellipse>();
+            }
+        }
+
+        private void InitializeBoard()
+        {
+            ImgCube1 = "/Assets/5.png";
+            ImgCube2 = "/Assets/6.png";
+
+            for (int i = 0; i < 24; i++)
+            {
+                if (boardState.WhiteLocation.ContainsKey(i))
+                {
+                    for (int j = 0; j < boardState.WhiteLocation[i]; j++)
+                    {
+                        _cells[i].Add(Checker(false));
+                    }
+                }
+            }
+
+            for (int i = 0; i < 24; i++)
+            {
+                if (boardState.BlackLocation.ContainsKey(i))
+                {
+                    for (int j = 0; j < boardState.BlackLocation[i]; j++)
+                    {
+                        _cells[i].Add(Checker(true));
+                    }
+                }
+            }
+        }
+
+        //Events
+        private void RollCubesResult(Cube rollCubeResult)
+        {
+            PaintCubeResult(rollCubeResult);
+        }
+    }
 }
 

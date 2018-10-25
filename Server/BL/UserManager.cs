@@ -51,15 +51,7 @@ namespace Server.BL
         //Methods
         internal void AddConnectionID(string connectionId, string userName)
         {
-            try
-            {
-                UserConnection.Add(userName, connectionId);
-            }
-            catch (Exception)
-            {
-
-                throw new Exception("Cant add user to connection list");
-            }
+            UserConnection.Add(userName, connectionId);
         }
 
         internal string GetConnectionID(string receiver)
@@ -160,6 +152,5 @@ namespace Server.BL
                 ContactList.Add(userName, newState);
             }
         }
-
     }
 }

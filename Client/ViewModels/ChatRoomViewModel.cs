@@ -58,7 +58,7 @@ namespace Client.ViewModels
             SendMessageCommand = new RelayCommand(SendMessage);
             CloseChatCommand = new RelayCommand(CloseChat);
 
-            _chatManager.RegistersendMessageEvent(ReciveMessage);
+            _chatManager.RegisterGetMessageEvent(ReciveMessage);
             _chatManager.RegisterOtherUserLeaveChatEvent(NotifyOtherUserLeaveChat);
         }
 

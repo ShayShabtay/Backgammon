@@ -22,6 +22,9 @@ namespace Client.ViewModels
         ClientUserManager _userManager;
         ClientChatManager _chatManager;
 
+        //Fields
+        private bool isGame;
+
         //Properties
         private ObservableCollection<UserForContact> _contacts { get; set; }
         public ObservableCollection<UserForContact> Contacts
@@ -41,7 +44,6 @@ namespace Client.ViewModels
         public ICommand OpenGameCommand { get; set; }
         public ICommand OpenChatCommand { get; set; }
         public UserForContact ChosenUser { get; set; }
-        private bool isGame;
 
         //Ctor
         public ChatListViewModel()
@@ -51,9 +53,9 @@ namespace Client.ViewModels
 
             Contacts = Utils.UserListConverterForView.ConvertUser(_userManager.GetContactList());
 
-            _userManager.RgisterNotifyEvent(UpdateContactList);
-            _chatManager.RegisterResultInvationEvent(InvationResult);
-            _chatManager.RegistersendRequestEvent(ShowChatRequest);
+            _userManager.RgisterNotifyAnyUserChangeStateEvent(UpdateContactList);
+            _chatManager.RegisterResultInvationEvent(InvitationResult);
+            _chatManager.RegisterReciverInvitationResultEvent(OpenReciverChatOrGame);
 
             LogOutCommand = new RelayCommand(LogOut);
             OpenChatCommand = new RelayCommand(OpenChat);
@@ -61,21 +63,20 @@ namespace Client.ViewModels
         }
 
         
-
-        //Functions
+        //Sender Methods
         private void OpenChat()
         {
             isGame = false;
-            Open(isGame);
-        }
+            SendChatOrGameRequest(isGame);
+        } //Pass sender to SendChatOrGameRequest method with open chat variable.
 
         private void OpenGame()
         {
             isGame = true;
-            Open(isGame);
-        }
+            SendChatOrGameRequest(isGame);
+        } //Pass sender  to SendChatOrGameRequest method with open game variable.
 
-        private void Open (bool isGame)
+        private void SendChatOrGameRequest (bool isGame)
         {
             if (ChosenUser != null)
             {
@@ -97,9 +98,9 @@ namespace Client.ViewModels
             {
                 MessageBox.Show("Please choose user to chat with");
             }
-        }
+        }  //Send chat or game request to other user.
 
-        private void InvationResult(bool userResponse)
+        private void InvitationResult(bool userResponse)
         {
             if (userResponse)
             {
@@ -107,7 +108,7 @@ namespace Client.ViewModels
 
                 if(isGame)
                 {
-                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
                         Application.Current.MainWindow.Content = new GameView();
                     }));
@@ -125,24 +126,26 @@ namespace Client.ViewModels
             {
                 MessageBox.Show("user refused to join chat");
             }
-        }
+        } //Open chat or game screen occording to the result.
 
-        private void ShowChatRequest(string sender, bool res, bool isGame)
+
+        //Reciver Methods
+        private void OpenReciverChatOrGame(bool reciverAnswer, bool isGame)
         {
-            if (res)
+            if (reciverAnswer)
             {
                 _userManager.ChangeUserStatus(UserState.Busy);
 
                 if (isGame)
                 {
-                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
                         Application.Current.MainWindow.Content = new GameView();
                     }));
                 }
                 else
                 {
-                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
                         Application.Current.MainWindow.Content = new ChatView();
                     }));
@@ -150,8 +153,10 @@ namespace Client.ViewModels
                
             }
 
-        }
+        } //Open chat or game screen occording to the result.
 
+
+        //Common methods
         private void UpdateContactList(Dictionary<string, UserState> dictionary)
         {
             Contacts = Utils.UserListConverterForView.ConvertUser(dictionary);
@@ -161,6 +166,6 @@ namespace Client.ViewModels
         {
             if (_userManager.InvokeLogOut())
                 Application.Current.MainWindow.Content = new RegisterView();
-        }
+        } // Log out the user and pass him to the register screen.
     }
 }

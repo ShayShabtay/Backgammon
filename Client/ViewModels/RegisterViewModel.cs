@@ -42,7 +42,7 @@ namespace Client.ViewModels
             User = new User();
         }
 
-        //Functions
+        //Methods
         private void Registeration()
         {
             if (User == null 
@@ -60,7 +60,7 @@ namespace Client.ViewModels
                     ErrorMessage = "username already exsists, please choose another one";
                 }
             }
-        }
+        }  //Register new user, automatic logged in and pass to chat list view.
 
         private void Login()
         {
@@ -79,6 +79,6 @@ namespace Client.ViewModels
                     ErrorMessage = "username or password are incorrect, please try again";
                 }
             }
-        }
+        } //Log in an existing user  and pass to chat list view.
     }
 }

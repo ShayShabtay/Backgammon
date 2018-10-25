@@ -8,7 +8,15 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="GameView">
 
-    <Grid >
+    <Grid RenderTransformOrigin="0.5,0.5" >
+        <Grid.RenderTransform>
+            <TransformGroup>
+                <ScaleTransform/>
+                <SkewTransform/>
+                <RotateTransform Angle="{Binding RotatedBoard}"/>
+                <TranslateTransform/>
+            </TransformGroup>
+        </Grid.RenderTransform>
         <Border HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="Black" BorderThickness="1">
             <Grid Height="450" Width="800">
                 <Grid.Background>
@@ -72,8 +80,8 @@
                 <StackPanel Grid.Column="13" Grid.Row="0">
                     <ItemsControl ItemsSource="{Binding Cells[11]}"></ItemsControl>
                 </StackPanel>
-                
-                
+
+
                 <!--bottom row-->
                 <StackPanel VerticalAlignment="Bottom" Grid.Column="1" Grid.Row="2">
                     <ItemsControl VerticalAlignment="Bottom" ItemsSource="{Binding Cells[23]}"></ItemsControl>
@@ -111,28 +119,28 @@
                 <StackPanel VerticalAlignment="Bottom" Grid.Column="13" Grid.Row="2">
                     <ItemsControl ItemsSource="{Binding Cells[12]}"></ItemsControl>
                 </StackPanel>
-                
+
                 <StackPanel Grid.Column="7" Grid.Row="0" VerticalAlignment="Center">
                     <Button Height="35" Width="35" Command="{Binding RoleCubeCommand}">
                         <Button.Background>
-                            <ImageBrush ImageSource="{Binding imgCube1}"/>
+                            <ImageBrush ImageSource="{Binding ImgCube1}"/>
                         </Button.Background>
                     </Button>
                     <Button Height="35" Width="35" Command="{Binding RoleCubeCommand}">
                         <Button.Background>
-                            <ImageBrush ImageSource="{Binding imgCube2}"/>
+                            <ImageBrush ImageSource="{Binding ImgCube2}"/>
                         </Button.Background>
                     </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="7" Grid.Row="2" VerticalAlignment="Center">
                     <Button Height="35" Width="35" Command="{Binding RoleCubeCommand}">
                         <Button.Background>
-                            <ImageBrush ImageSource="{Binding imgCube1}"/>
+                            <ImageBrush ImageSource="{Binding ImgCube1}"/>
                         </Button.Background>
                     </Button>
                     <Button Height="35" Width="35" Command="{Binding RoleCubeCommand}">
                         <Button.Background>
-                            <ImageBrush ImageSource="{Binding imgCube2}"/>
+                            <ImageBrush ImageSource="{Binding ImgCube2}"/>
                         </Button.Background>
                     </Button>
 
@@ -141,7 +149,7 @@
                 <StackPanel Grid.Column="7" Grid.Row="1">
                     <ItemsControl ItemsSource="{Binding Eaten}"></ItemsControl>
                 </StackPanel>
-                
+
             </Grid>
         </Border>
     </Grid>
